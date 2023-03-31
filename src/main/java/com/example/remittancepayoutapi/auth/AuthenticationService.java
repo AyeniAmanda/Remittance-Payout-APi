@@ -2,17 +2,17 @@ package com.example.remittancepayoutapi.auth;
 
 
 import com.example.remittancepayoutapi.dto.AuthCredential;
-import com.example.remittancepayoutapi.exceptions.BadRequestException;
-import com.example.remittancepayoutapi.exceptions.ResourceNotFoundException;
-import com.example.remittancepayoutapi.exceptions.UnauthorizedException;
+import com.example.remittancepayoutapi.exceptions.CustomWebClientException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,52 +31,42 @@ public class AuthenticationService {
 
     @Value("${seerbit.clientSecret}")
     private String CLIENT_SECRET;
-    private final RestTemplate restTemplate;
 
-    private AuthCredential authCredential;
-
-
-    public ResponseEntity<AuthCredential> authenticate() {
+    public Mono<ResponseEntity<AuthCredential>> authenticate() {
         URI uri;
         try {
             uri = new URI(BASE_URL + "/auth");
+
             MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
             map.add("grant_type", GRANT_TYPE);
             map.add("client_id", CLIENT_ID);
             map.add("client_secret", CLIENT_SECRET);
 
+            WebClient webClient = WebClient.create();
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, httpHeaders);
-
-            ResponseEntity<AuthCredential> exchange = restTemplate.exchange(uri, HttpMethod.POST, entity, AuthCredential.class);
-
-            authCredential = exchange.getBody();
-
-            if (authCredential == null) {
-                throw new ResourceNotFoundException("Resource does not exist");
-            }
-            authCredential.setCreated_at(System.currentTimeMillis());
-
-            return exchange;
-
-
+            return webClient.method(HttpMethod.POST)
+                    .uri(uri)
+                    .headers(headers -> headers.addAll(httpHeaders))
+                    .body(BodyInserters.fromFormData(map))
+                    .retrieve()
+                    .toEntity(AuthCredential.class)
+                    .map(exchange -> {
+                        AuthCredential authCredential = exchange.getBody();
+                        if (authCredential != null) {
+                            authCredential.setCreated_at(System.currentTimeMillis());
+                        }
+                        return exchange;
+                    });
         } catch (URISyntaxException exception) {
             throw new RuntimeException(exception.getMessage());
-
-        } catch (UnauthorizedException | HttpStatusCodeException exception) {
-            throw new UnauthorizedException(exception.getMessage());
+        } catch (WebClientResponseException exception) {
+            throw new CustomWebClientException(HttpStatus.valueOf(exception.getStatusCode().value()), exception.getMessage());
         }
-
     }
 
     public synchronized String getValidToken() {
-
-        AuthCredential credentials = authenticate().getBody();
-        if (credentials == null) {
-            throw new BadRequestException("Invalid token");
-        }
-        return credentials.getAccess_token();
+        return authenticate().map(token -> token.getBody().getAccess_token()).block();
     }
 }

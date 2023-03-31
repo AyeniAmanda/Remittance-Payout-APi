@@ -1,14 +1,15 @@
 package com.example.remittancepayoutapi.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
+
+import java.io.Serializable;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
 @Builder
-public class RequestDto {
+public class RequestDto implements Serializable {
 
     private String publickey;
     private Transaction transaction;

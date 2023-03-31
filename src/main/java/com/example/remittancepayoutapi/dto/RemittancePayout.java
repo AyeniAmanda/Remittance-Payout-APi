@@ -3,12 +3,14 @@ package com.example.remittancepayoutapi.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RemittancePayout {
+public class RemittancePayout implements Serializable {
 
     @NotBlank(message = "Name cannot be empty!")
     private String name;

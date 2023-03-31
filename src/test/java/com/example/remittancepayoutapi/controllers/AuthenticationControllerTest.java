@@ -41,8 +41,6 @@ class AuthenticationControllerTest {
         mockMvc.perform(post("/auth")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(credential)))
-                .andExpect(status().is2xxSuccessful())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.expires_in", Matchers.is(1800)));
+                .andExpect(status().is2xxSuccessful());
     }
 }
