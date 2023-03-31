@@ -71,8 +71,7 @@ public class AuthenticationService {
 
     }
 
-    public synchronized String getValidToken()
-    {
+    public synchronized String getValidToken() {
 
         AuthCredential credentials = authenticate().getBody();
         if (credentials == null) {
@@ -80,5 +79,4 @@ public class AuthenticationService {
         }
         return credentials.getAccess_token();
     }
-
 }

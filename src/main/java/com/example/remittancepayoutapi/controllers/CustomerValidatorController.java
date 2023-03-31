@@ -22,12 +22,9 @@ public class CustomerValidatorController {
     private final CustomerValidatorService customerValidatorService;
 
     @PostMapping(value = "validate")
-    public ValidateResponseDto validateCustomer(
-            @RequestBody @Valid ValidateRequestDto validateRequestDto
-    ) {
+    public ValidateResponseDto validateCustomer(@RequestBody @Valid ValidateRequestDto validateRequestDto) {
         ResponseEntity<ValidateResponseDto> customerValidateResponseResponseEntity = customerValidatorService
                 .validateCustomer(validateRequestDto);
-        System.out.println("customerValidateResponseResponseEntity: " + customerValidateResponseResponseEntity);
         return customerValidateResponseResponseEntity.getBody();
     }
 }

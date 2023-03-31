@@ -64,8 +64,6 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
             throw new ResourceNotFoundException("Resource does not exist");
         }
 
-        System.out.println("======> exchange: " + exchange.getBody());
-
         if (!message.equalsIgnoreCase(exchange.getBody().getMessage())) {
             throw new BadRequestException(exchange.getBody().getMessage());
         }

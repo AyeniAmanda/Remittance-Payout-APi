@@ -7,7 +7,6 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-@ToString
 public class Lock {
     private String status;
     private String by;

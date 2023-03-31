@@ -1,17 +1,15 @@
 package com.example.remittancepayoutapi.dto;
 
 import com.example.remittancepayoutapi.enums.Currency;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
+@Setter
 public class Order {
     private BigDecimal amount;
     private String description;

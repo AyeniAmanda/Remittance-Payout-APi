@@ -49,5 +49,4 @@ public class RemittancePayoutController {
 
         return remittancePayoutApiService.create(body);
     }
-
 }
