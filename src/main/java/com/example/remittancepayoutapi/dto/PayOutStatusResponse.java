@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class StatusResponse {
+public class PayOutStatusResponse {
     private String code;
     private String message;
     private Transaction transaction;

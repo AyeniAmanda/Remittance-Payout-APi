@@ -2,7 +2,7 @@ package com.example.remittancepayoutapi.controllers;
 
 import com.example.remittancepayoutapi.dto.RequestDto;
 import com.example.remittancepayoutapi.dto.Response;
-import com.example.remittancepayoutapi.dto.StatusResponse;
+import com.example.remittancepayoutapi.dto.PayOutStatusResponse;
 import com.example.remittancepayoutapi.enums.Operation;
 import com.example.remittancepayoutapi.service.RemittancePayoutApiService;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -28,7 +28,7 @@ public class RemittancePayoutController {
     }
 
     @GetMapping(value = "status")
-    public StatusResponse checkStatus(@RequestParam("reference") String reference) {
+    public PayOutStatusResponse checkStatus(@RequestParam("reference") String reference) {
 
         return remittancePayoutApiService.checkStatus(reference).getBody();
     }

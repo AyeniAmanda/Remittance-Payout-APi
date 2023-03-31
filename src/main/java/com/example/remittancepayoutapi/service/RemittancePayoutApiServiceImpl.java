@@ -4,7 +4,7 @@ package com.example.remittancepayoutapi.service;
 import com.example.remittancepayoutapi.auth.AuthenticationService;
 import com.example.remittancepayoutapi.dto.RequestDto;
 import com.example.remittancepayoutapi.dto.Response;
-import com.example.remittancepayoutapi.dto.StatusResponse;
+import com.example.remittancepayoutapi.dto.PayOutStatusResponse;
 import com.example.remittancepayoutapi.exceptions.BadRequestException;
 import com.example.remittancepayoutapi.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -37,12 +37,12 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
     }
 
     @Override
-    public ResponseEntity<StatusResponse> checkStatus(String reference) {
+    public ResponseEntity<PayOutStatusResponse> checkStatus(String reference) {
         URI uri = getURI("/payout/status?reference=" + reference);
         HttpHeaders httpHeaders = getHeaders();
 
         HttpEntity<String> httpEntity = new HttpEntity<>(reference, httpHeaders);
-        ResponseEntity<StatusResponse> exchange = restTemplate.exchange(uri, HttpMethod.GET, httpEntity, StatusResponse.class);
+        ResponseEntity<PayOutStatusResponse> exchange = restTemplate.exchange(uri, HttpMethod.GET, httpEntity, PayOutStatusResponse.class);
 
         if (exchange.getBody() == null) {
             throw new ResourceNotFoundException("Resource not found");
