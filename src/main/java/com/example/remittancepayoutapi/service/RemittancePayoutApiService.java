@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 public interface RemittancePayoutApiService {
     Mono<ResponseEntity<Response>> payout(RequestDto body);
 
-    ResponseEntity<PayOutStatusResponse> checkStatus(String reference);
+    Mono<ResponseEntity<PayOutStatusResponse>> checkStatus(String reference);
 
     ResponseEntity<Response> cancel(RequestDto body);
 

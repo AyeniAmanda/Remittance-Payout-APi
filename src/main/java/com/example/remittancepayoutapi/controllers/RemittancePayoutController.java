@@ -1,10 +1,11 @@
 package com.example.remittancepayoutapi.controllers;
 
+import com.example.remittancepayoutapi.dto.PayOutStatusResponse;
 import com.example.remittancepayoutapi.dto.RequestDto;
 import com.example.remittancepayoutapi.dto.Response;
-import com.example.remittancepayoutapi.dto.PayOutStatusResponse;
 import com.example.remittancepayoutapi.enums.Operation;
 import com.example.remittancepayoutapi.service.RemittancePayoutApiService;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,13 @@ import java.util.Optional;
 @RestController
 @RequestMapping("payout")
 @RequiredArgsConstructor
-@ApiResponses
+@ApiResponses(value = {
+        @ApiResponse(responseCode = "400", description = "This is a bad request"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "404", description = "Not found"),
+        @ApiResponse(responseCode = "415", description = "The MediaType is unsupported."),
+        @ApiResponse(responseCode = "500", description = "The server is down, please make sure that the Application is running")
+})
 public class RemittancePayoutController {
     private final RemittancePayoutApiService remittancePayoutApiService;
 
@@ -29,9 +36,9 @@ public class RemittancePayoutController {
     }
 
     @GetMapping(value = "status")
-    public PayOutStatusResponse checkStatus(@RequestParam("reference") String reference) {
+    public Mono<PayOutStatusResponse> checkStatus(@RequestParam("reference") String reference) {
+        return remittancePayoutApiService.checkStatus(reference).map(ResponseEntity::getBody);
 
-        return remittancePayoutApiService.checkStatus(reference).getBody();
     }
 
     @PostMapping("cancel")

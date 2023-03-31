@@ -54,23 +54,28 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
     }
 
     @Override
-    public ResponseEntity<PayOutStatusResponse> checkStatus(String reference) {
+    public Mono<ResponseEntity<PayOutStatusResponse>> checkStatus(String reference) {
         URI uri = getURI("/payout/status?reference=" + reference);
-        HttpHeaders httpHeaders = getHeaders();
+        WebClient webClient = WebClient.create();
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        HttpEntity<String> httpEntity = new HttpEntity<>(reference, httpHeaders);
-        ResponseEntity<PayOutStatusResponse> exchange = restTemplate.exchange(uri, HttpMethod.GET, httpEntity, PayOutStatusResponse.class);
-
-        if (exchange.getBody() == null) {
-            throw new ResourceNotFoundException("Resource not found");
-        }
-
-        if (!"Successful" .equalsIgnoreCase(exchange.getBody().getMessage())) {
-            throw new BadRequestException(exchange.getBody().getMessage());
-        }
-
-        return exchange;
+        return webClient.method(HttpMethod.GET)
+                .uri(uri)
+                .headers(headers -> headers.addAll(getHeaders()))
+                .retrieve()
+                .bodyToMono(PayOutStatusResponse.class)
+                .map(response -> {
+                    if (response == null) {
+                        throw new ResourceNotFoundException("Resource not found");
+                    }
+                    if (!"Successful".equalsIgnoreCase(response.getMessage())) {
+                        throw new BadRequestException(response.getMessage());
+                    }
+                    return ResponseEntity.ok(response);
+                });
     }
+
 
     private ResponseEntity<Response> getResponseResponseEntity(RequestDto body, URI uri, String message) {
         HttpHeaders httpHeaders = getHeaders();
