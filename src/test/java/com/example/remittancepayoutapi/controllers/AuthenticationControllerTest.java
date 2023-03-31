@@ -1,46 +1,45 @@
 package com.example.remittancepayoutapi.controllers;
 
+import com.example.remittancepayoutapi.auth.AuthenticationService;
 import com.example.remittancepayoutapi.dto.AuthCredential;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.Assert.assertEquals;
 
-@AutoConfigureMockMvc
-@SpringBootTest
-@TestPropertySource(locations = "classpath:env.properties")
-class AuthenticationControllerTest {
+@WebFluxTest(AuthenticationController.class)
+public class AuthenticationControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
-    private ObjectMapper objectMapper;
-
-    private AuthCredential credential;
-
-    @BeforeEach
-    void setup() {
-        objectMapper = new ObjectMapper();
-        credential = new AuthCredential();
-        credential.setAccess_token("a9d9318343ea3382c2f18840f11fc1c01a2b3c4d");
-    }
+    @MockBean
+    private AuthenticationService authenticationService;
 
     @Test
-    @DisplayName("when a user verified the return access token")
-    public void authenticationTest() throws Exception {
-        mockMvc.perform(post("/auth")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(credential)))
-                .andExpect(status().is2xxSuccessful());
+    public void testGenerateToken() {
+
+        AuthCredential credential = new AuthCredential();
+        credential.setAccess_token("12345");
+
+        Mockito.when(authenticationService.authenticate())
+                .thenReturn(Mono.just(ResponseEntity.ok().body(credential)));
+
+        webTestClient.post()
+                .uri("/auth")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody(AuthCredential.class)
+                .value(response -> {
+                    assertEquals("12345", response.getAccess_token());
+                });
     }
 }
