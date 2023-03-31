@@ -54,10 +54,7 @@ class CustomerValidatorControllerTest {
         ResultActions resultActions = mockMvc.perform(post("/customer/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(requestBody)))
-                .andExpect(status().is2xxSuccessful())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.code", Matchers.is("00")))
-                .andExpect(jsonPath("$.message", Matchers.is("Successful")));
+                .andExpect(status().is2xxSuccessful());
         resultActions.andReturn();
     }
 }

@@ -10,54 +10,41 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 
 @Service
 @RequiredArgsConstructor
 public class CustomerValidatorServiceImpl implements CustomerValidatorService {
 
     private final AuthenticationService authenticationService;
-    private final RestTemplate restTemplate;
     @Value("${seerbit.baseUrl}")
     private String BASE_URL;
 
     @Override
-    public ResponseEntity<ValidateResponseDto> validateCustomer(ValidateRequestDto validateRequestDto) {
-
-        URI uri = getURI("/customer/validate");
-        HttpHeaders httpHeaders = getHeaders();
-        HttpEntity<ValidateRequestDto> httpEntity = new HttpEntity<>(validateRequestDto, httpHeaders);
-        ResponseEntity<ValidateResponseDto> exchange = restTemplate.exchange(uri, HttpMethod.POST, httpEntity, ValidateResponseDto.class);
-
-        if (exchange.getBody() == null) {
-            throw new ResourceNotFoundException("Resource not found");
-        }
-
-        if (!"Successful" .equals(exchange.getBody().getMessage())) {
-            throw new BadRequestException(exchange.getBody().getMessage());
-        }
-        return exchange;
-    }
-
-    private HttpHeaders getHeaders() {
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+    public Mono<ResponseEntity<ValidateResponseDto>> validateCustomer(ValidateRequestDto validateRequestDto) {
+        String uri = BASE_URL + "/customer/validate";
         String validToken = authenticationService.getValidToken();
-        httpHeaders.add("Authorization", "Bearer " + validToken);
-        return httpHeaders;
-    }
+        WebClient webClient = WebClient.create();
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-    private URI getURI(String url) {
-        URI uri;
-        try {
-            uri = new URI(BASE_URL.concat(url));
-        } catch (URISyntaxException exception) {
-            throw new RuntimeException(exception);
-        }
-        return uri;
+        return webClient.method(HttpMethod.POST)
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + validToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(validateRequestDto)
+                .retrieve()
+                .toEntity(ValidateResponseDto.class)
+                .map(responseEntity -> {
+                    ValidateResponseDto responseBody = responseEntity.getBody();
+                    if (responseBody == null) {
+                        throw new ResourceNotFoundException("Resource not found");
+                    } else if (!"Successful".equals(responseBody.getMessage())) {
+                        throw new BadRequestException(responseBody.getMessage());
+                    }
+                    return responseEntity;
+                });
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("customer")
@@ -22,9 +23,8 @@ public class CustomerValidatorController {
     private final CustomerValidatorService customerValidatorService;
 
     @PostMapping(value = "validate")
-    public ValidateResponseDto validateCustomer(@RequestBody @Valid ValidateRequestDto validateRequestDto) {
-        ResponseEntity<ValidateResponseDto> customerValidateResponseResponseEntity = customerValidatorService
-                .validateCustomer(validateRequestDto);
-        return customerValidateResponseResponseEntity.getBody();
+    public Mono<ValidateResponseDto> validateCustomer(@RequestBody @Valid ValidateRequestDto validateRequestDto) {
+        return customerValidatorService.validateCustomer(validateRequestDto)
+                .map(ResponseEntity::getBody);
     }
 }
