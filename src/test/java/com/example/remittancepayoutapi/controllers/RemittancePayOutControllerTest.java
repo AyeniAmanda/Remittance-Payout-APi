@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @SpringBootTest
-@TestPropertySource(locations = "classpath:config.properties")
+@TestPropertySource(locations = "classpath:env.properties")
 class RemittancePayOutControllerTest {
 
     @Autowired
