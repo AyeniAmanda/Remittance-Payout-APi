@@ -47,7 +47,7 @@ class CustomerValidatorControllerTest {
 
     @Test
     @DisplayName("when user enters the correct requirements then validate user")
-    void validateTest() throws Exception {
+    void CustomerValidateTest() throws Exception {
         requestBody.getOrder().setAmount(BigDecimal.valueOf(40.00));
         requestBody.getSource().setOperation(Operation.account_enquiry);
 

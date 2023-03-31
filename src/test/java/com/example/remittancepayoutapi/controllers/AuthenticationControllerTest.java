@@ -37,7 +37,7 @@ class AuthenticationControllerTest {
 
     @Test
     @DisplayName("when a user verified the return access token")
-    public void authenticate() throws Exception {
+    public void authenticationTest() throws Exception {
         mockMvc.perform(post("/auth")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(credential)))
