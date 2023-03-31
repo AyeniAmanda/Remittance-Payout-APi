@@ -14,6 +14,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,9 +33,24 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
     private String BASE_URL;
 
     @Override
-    public ResponseEntity<Response> payout(RequestDto body) {
+    public Mono<ResponseEntity<Response>> payout(RequestDto body) {
         URI uri = getURI("/account/payout");
-        return getResponseResponseEntity(body, uri, "Successful");
+        WebClient webClient = WebClient.create();
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        return webClient.method(HttpMethod.POST)
+                .uri(uri)
+                .headers(headers -> headers.addAll(getHeaders()))
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(Response.class)
+                .map(response -> {
+                    if (!"Successful".equalsIgnoreCase(response.getMessage())) {
+                        throw new BadRequestException(response.getMessage());
+                    }
+                    return ResponseEntity.ok(response);
+                });
     }
 
     @Override

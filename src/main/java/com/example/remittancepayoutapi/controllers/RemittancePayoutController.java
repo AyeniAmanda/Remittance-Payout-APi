@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -20,7 +21,7 @@ public class RemittancePayoutController {
     private final RemittancePayoutApiService remittancePayoutApiService;
 
     @PostMapping
-    public ResponseEntity<Response> payout(@RequestBody RequestDto body) {
+    public Mono<ResponseEntity<Response>> payout(@RequestBody RequestDto body) {
         Optional<Operation> optional = Optional.ofNullable(body.getSource().getOperation());
         optional.orElseThrow(RuntimeException::new);
 
