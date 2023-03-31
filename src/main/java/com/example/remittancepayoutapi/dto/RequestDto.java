@@ -9,10 +9,10 @@ import lombok.*;
 @Setter
 @Getter
 @Builder
-public class RequestDtoEntity extends BaseDtoEntity {
+public class RequestDto {
 
-    private String publicKey;
+    private String publickey;
     private Transaction transaction;
-    private PaymentRequest order;
+    private Order order;
     private Source source;
 }

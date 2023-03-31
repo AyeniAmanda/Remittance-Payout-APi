@@ -1,17 +1,17 @@
 package com.example.remittancepayoutapi.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Transaction {
     @NotBlank(message = "reference must be provided!")
     private String reference;
-    private String linkingReference;
+    private String linkingreference;
 }

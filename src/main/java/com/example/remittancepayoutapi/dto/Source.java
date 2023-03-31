@@ -1,14 +1,13 @@
 package com.example.remittancepayoutapi.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.example.remittancepayoutapi.enums.Operation;
+import lombok.*;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
+@Setter
 public class Source {
 
     private RemittancePayout sender;

@@ -1,16 +1,20 @@
 package com.example.remittancepayoutapi.service;
 
-import com.example.remittancepayoutapi.dto.AuthCredential;
-import com.example.remittancepayoutapi.dto.BaseDtoEntity;
+import com.example.remittancepayoutapi.dto.RequestDto;
 import com.example.remittancepayoutapi.dto.Response;
+import com.example.remittancepayoutapi.dto.StatusResponse;
 import org.springframework.http.ResponseEntity;
 
-import java.net.URI;
-
 public interface RemittancePayoutApiService {
-    String getValidToken();
-    ResponseEntity<AuthCredential> authenticate(URI uri);
-    ResponseEntity<Response> payout(BaseDtoEntity requestBody);
-    ResponseEntity<Response> cashPickUp(BaseDtoEntity requestBody);
+    ResponseEntity<Response> payout(RequestDto body);
 
+    ResponseEntity<StatusResponse> checkStatus(String reference);
+
+    ResponseEntity<Response> cancel(RequestDto body);
+
+    ResponseEntity<Response> update(RequestDto body);
+
+    ResponseEntity<Response> create(RequestDto body);
 }
+
+

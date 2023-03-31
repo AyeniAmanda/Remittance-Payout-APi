@@ -1,21 +1,24 @@
 package com.example.remittancepayoutapi.service;
 
-import com.example.remittancepayoutapi.dto.AuthCredential;
-import com.example.remittancepayoutapi.dto.BaseDtoEntity;
+
+import com.example.remittancepayoutapi.auth.AuthenticationService;
+import com.example.remittancepayoutapi.dto.RequestDto;
 import com.example.remittancepayoutapi.dto.Response;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.remittancepayoutapi.dto.StatusResponse;
+import com.example.remittancepayoutapi.exceptions.BadRequestException;
+import com.example.remittancepayoutapi.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,97 +27,91 @@ import java.net.URISyntaxException;
 public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiService {
 
     @Value("${seerbit.baseUrl}")
-    private String baseUrl;
+    private String BASE_URL;
 
-    @Value("${seerbit.grantType}")
-    private String grantType;
-
-    @Value("${seerbit.clientId}")
-    private String clientId;
-
-    @Value("${seerbit.clientSecret}")
-    private String clientSecret;
-
+    private final AuthenticationService authentication;
     private final RestTemplate restTemplate;
 
-    private AuthCredential authCredential;
+    @Override
+    public ResponseEntity<Response> payout(RequestDto body) {
+        URI uri = getURI("/account/payout");
+        return getResponseResponseEntity(body, uri, "Successful");
+    }
 
     @Override
-    public synchronized String getValidToken() {
-        URI uri = getUri("/oauth/token");
+    public ResponseEntity<StatusResponse> checkStatus(String reference) {
+        URI uri = getURI("/payout/status?reference=" + reference);
+        HttpHeaders httpHeaders = getHeaders();
 
-        try {
-            if (authCredential == null || isTokenExpired()) {
-                log.info("Requesting token");
-                authCredential = authenticate(uri).getBody();
-            }
-        } catch (Exception exception) {
-            throw new RuntimeException(exception);
+        HttpEntity<String> httpEntity = new HttpEntity<>(reference, httpHeaders);
+        ResponseEntity<StatusResponse> exchange = restTemplate.exchange(uri, HttpMethod.GET, httpEntity, StatusResponse.class);
+
+        if (exchange.getBody() == null ) {
+            throw new ResourceNotFoundException("Resource not found");
         }
 
-        return authCredential.getAccessToken();
-    }
-
-    private boolean isTokenExpired() {
-        long currentTimeMillis = System.currentTimeMillis();
-        long timeSinceTokenRequested = currentTimeMillis - authCredential.getRequestedAt();
-        long timeRemainingUntilExpiration = authCredential.getExpiresIn() - timeSinceTokenRequested;
-        boolean isExpired = timeRemainingUntilExpiration <= 0;
-
-        if (isExpired) {
-            log.info("Token expired, requesting new token");
+        if (!"Successful".equalsIgnoreCase(exchange.getBody().getMessage())) {
+            throw new BadRequestException(exchange.getBody().getMessage());
         }
 
-        return isExpired;
+        return exchange;
     }
 
-    @Override
-    public ResponseEntity<AuthCredential> authenticate(URI uri) {
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", grantType);
-        params.add("client_id", clientId);
-        params.add("client_secret", clientSecret);
 
+    private ResponseEntity<Response> getResponseResponseEntity(RequestDto body, URI uri, String message) {
+        HttpHeaders httpHeaders = getHeaders();
+        HttpEntity<RequestDto> httpEntity = new HttpEntity<>(body, httpHeaders);
+
+        ResponseEntity<Response> exchange = restTemplate.exchange(uri, HttpMethod.POST, httpEntity, Response.class);
+        if (exchange.getBody() == null ) {
+            throw new ResourceNotFoundException("Resource does not exist");
+        }
+
+        System.out.println("======> exchange: " + exchange.getBody());
+
+        if (!message.equalsIgnoreCase(exchange.getBody().getMessage())) {
+            throw new BadRequestException(exchange.getBody().getMessage());
+        }
+        return exchange;
+    }
+
+
+    private HttpHeaders getHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        String validToken = authentication.getValidToken();
+        httpHeaders.add("Authorization", "Bearer " + validToken);
+        return httpHeaders;
 
-        HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(params, httpHeaders);
-
-        return restTemplate.exchange(uri, HttpMethod.POST, httpEntity, AuthCredential.class);
     }
-
-    @Override
-    public ResponseEntity<Response> payout(BaseDtoEntity requestBody) {
-        URI uri = getUri("/payout/create");
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Authorization", "Bearer " + getValidToken());
-
-        HttpEntity<BaseDtoEntity> httpEntity = new HttpEntity<>(requestBody, httpHeaders);
-
-        return restTemplate.exchange(uri, HttpMethod.POST, httpEntity, Response.class);
-    }
-
-    @Override
-    public ResponseEntity<Response> cashPickUp(BaseDtoEntity requestBody) {
-        URI uri = getUri("/cashPickup/create");
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Authorization", "Bearer " + getValidToken());
-
-        HttpEntity<BaseDtoEntity> httpEntity = new HttpEntity<>(requestBody, httpHeaders);
-
-        return restTemplate.exchange(uri, HttpMethod.POST, httpEntity, Response.class);
-    }
-
-    private URI getUri(String endpoint) {
+    private URI getURI(String url) {
         URI uri;
         try {
-            uri = new URI(baseUrl.concat(endpoint));
+            uri = new URI(BASE_URL.concat(url));
         } catch (URISyntaxException exception) {
-            log.error(exception.getMessage(), exception);
             throw new RuntimeException(exception);
         }
         return uri;
     }
+
+    @Override
+    public ResponseEntity<Response> cancel(RequestDto body) {
+        URI uri = getURI("/payout/cancel");
+        return getResponseResponseEntity(body, uri, "Cancelled");
+    }
+
+    @Override
+    public ResponseEntity<Response> update(RequestDto body) {
+        URI uri = getURI("/payout/update");
+
+        return getResponseResponseEntity(body, uri, "Successful");
+    }
+
+    @Override
+    public ResponseEntity<Response> create(RequestDto body) {
+        URI uri = getURI("/payout/create");
+
+        return getResponseResponseEntity(body, uri, "Successful");
+    }
+
 }

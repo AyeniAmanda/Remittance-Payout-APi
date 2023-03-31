@@ -8,9 +8,9 @@ import lombok.*;
 @Setter
 @Builder
 @ToString
-public class Response {
-
+public class ValidateResponseDto {
     private String code;
     private String message;
-    private Transaction transaction;
+    private String cutomername;
+
 }

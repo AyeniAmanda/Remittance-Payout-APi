@@ -1,5 +1,6 @@
 package com.example.remittancepayoutapi.dto;
 
+import com.example.remittancepayoutapi.enums.Currency;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -13,15 +14,12 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PaymentRequest {
-    @NotNull(message = "Amount is required!")
+public class Order {
     private BigDecimal amount;
     private String description;
     private String reason;
-    @NotNull(message = "Currency is required!")
     private Currency currency;
-    @NotEmpty(message = "Country is required!")
     private String country;
-    private String secretQuestion;
-    private String secretAnswer;
+    private String secretquestion;
+    private String secretanswer;
 }

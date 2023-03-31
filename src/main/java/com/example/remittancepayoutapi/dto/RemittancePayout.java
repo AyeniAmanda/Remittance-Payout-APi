@@ -16,13 +16,13 @@ public class RemittancePayout {
     @NotBlank(message = "Address cannot be empty!")
     private String address;
 
-    private String bankCode;
-    private String accountNumber;
+    private String bankcode;
+    private String accountnumber;
     private String mobile;
     private String country;
-    private String idType;
-    private String idNumber;
-    private String idExpiry;
+    private String idtype;
+    private String idnumber;
+    private String idexpiry;
     private String occupation;
     private String beneOccupation;
     private String beneCustRelationship;
