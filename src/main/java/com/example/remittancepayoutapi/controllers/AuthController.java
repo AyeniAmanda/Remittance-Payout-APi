@@ -2,7 +2,6 @@ package com.example.remittancepayoutapi.controllers;
 
 import com.example.remittancepayoutapi.auth.AuthenticationService;
 import com.example.remittancepayoutapi.dto.AuthCredential;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

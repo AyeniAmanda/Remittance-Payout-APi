@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
@@ -26,11 +25,10 @@ import java.net.URISyntaxException;
 @Service
 public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiService {
 
-    @Value("${seerbit.baseUrl}")
-    private String BASE_URL;
-
     private final AuthenticationService authentication;
     private final RestTemplate restTemplate;
+    @Value("${seerbit.baseUrl}")
+    private String BASE_URL;
 
     @Override
     public ResponseEntity<Response> payout(RequestDto body) {
@@ -46,24 +44,23 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
         HttpEntity<String> httpEntity = new HttpEntity<>(reference, httpHeaders);
         ResponseEntity<StatusResponse> exchange = restTemplate.exchange(uri, HttpMethod.GET, httpEntity, StatusResponse.class);
 
-        if (exchange.getBody() == null ) {
+        if (exchange.getBody() == null) {
             throw new ResourceNotFoundException("Resource not found");
         }
 
-        if (!"Successful".equalsIgnoreCase(exchange.getBody().getMessage())) {
+        if (!"Successful" .equalsIgnoreCase(exchange.getBody().getMessage())) {
             throw new BadRequestException(exchange.getBody().getMessage());
         }
 
         return exchange;
     }
 
-
     private ResponseEntity<Response> getResponseResponseEntity(RequestDto body, URI uri, String message) {
         HttpHeaders httpHeaders = getHeaders();
         HttpEntity<RequestDto> httpEntity = new HttpEntity<>(body, httpHeaders);
 
         ResponseEntity<Response> exchange = restTemplate.exchange(uri, HttpMethod.POST, httpEntity, Response.class);
-        if (exchange.getBody() == null ) {
+        if (exchange.getBody() == null) {
             throw new ResourceNotFoundException("Resource does not exist");
         }
 
@@ -75,7 +72,6 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
         return exchange;
     }
 
-
     private HttpHeaders getHeaders() {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -84,6 +80,7 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
         return httpHeaders;
 
     }
+
     private URI getURI(String url) {
         URI uri;
         try {
@@ -113,5 +110,4 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
 
         return getResponseResponseEntity(body, uri, "Successful");
     }
-
 }

@@ -17,13 +17,12 @@ import java.net.URISyntaxException;
 
 @Service
 @RequiredArgsConstructor
-public class CustomerServiceImpl implements CustomerService {
-
-    @Value("${seerbit.baseUrl}")
-    private String BASE_URL;
+public class CustomerValidatorServiceImpl implements CustomerValidatorService {
 
     private final AuthenticationService authenticationService;
     private final RestTemplate restTemplate;
+    @Value("${seerbit.baseUrl}")
+    private String BASE_URL;
 
     @Override
     public ResponseEntity<ValidateResponseDto> validateCustomer(ValidateRequestDto validateRequestDto) {
@@ -33,11 +32,11 @@ public class CustomerServiceImpl implements CustomerService {
         HttpEntity<ValidateRequestDto> httpEntity = new HttpEntity<>(validateRequestDto, httpHeaders);
         ResponseEntity<ValidateResponseDto> exchange = restTemplate.exchange(uri, HttpMethod.POST, httpEntity, ValidateResponseDto.class);
 
-        if (exchange.getBody() == null ) {
+        if (exchange.getBody() == null) {
             throw new ResourceNotFoundException("Resource not found");
         }
 
-        if (!"Successful".equals(exchange.getBody().getMessage())) {
+        if (!"Successful" .equals(exchange.getBody().getMessage())) {
             throw new BadRequestException(exchange.getBody().getMessage());
         }
         return exchange;
@@ -50,8 +49,8 @@ public class CustomerServiceImpl implements CustomerService {
         String validToken = authenticationService.getValidToken();
         httpHeaders.add("Authorization", "Bearer " + validToken);
         return httpHeaders;
-
     }
+
     private URI getURI(String url) {
         URI uri;
         try {

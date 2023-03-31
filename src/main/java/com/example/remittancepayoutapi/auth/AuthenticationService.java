@@ -57,7 +57,6 @@ public class AuthenticationService {
             if (authCredential == null) {
                 throw new ResourceNotFoundException("Resource does not exist");
             }
-            System.out.println("=====>authCredentials: " + authCredential);
             authCredential.setCreated_at(System.currentTimeMillis());
 
             return exchange;
@@ -76,7 +75,6 @@ public class AuthenticationService {
     {
 
         AuthCredential credentials = authenticate().getBody();
-        System.out.println("=========> credentials: " + credentials);
         if (credentials == null) {
             throw new BadRequestException("Invalid token");
         }

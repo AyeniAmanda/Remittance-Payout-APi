@@ -16,5 +16,3 @@ public interface RemittancePayoutApiService {
 
     ResponseEntity<Response> create(RequestDto body);
 }
-
-

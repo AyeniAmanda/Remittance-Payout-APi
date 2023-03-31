@@ -3,7 +3,7 @@ package com.example.remittancepayoutapi.controllers;
 
 import com.example.remittancepayoutapi.dto.ValidateRequestDto;
 import com.example.remittancepayoutapi.dto.ValidateResponseDto;
-import com.example.remittancepayoutapi.service.CustomerService;
+import com.example.remittancepayoutapi.service.CustomerValidatorService;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 @ApiResponses
 public class CustomerValidatorController {
 
-    private final CustomerService customerService;
+    private final CustomerValidatorService customerValidatorService;
 
     @PostMapping(value = "validate")
     public ValidateResponseDto validateCustomer(
             @RequestBody @Valid ValidateRequestDto validateRequestDto
     ) {
-        ResponseEntity<ValidateResponseDto> customerValidateResponseResponseEntity = customerService
+        ResponseEntity<ValidateResponseDto> customerValidateResponseResponseEntity = customerValidatorService
                 .validateCustomer(validateRequestDto);
         System.out.println("customerValidateResponseResponseEntity: " + customerValidateResponseResponseEntity);
         return customerValidateResponseResponseEntity.getBody();

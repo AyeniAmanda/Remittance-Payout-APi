@@ -12,10 +12,8 @@ public class RemittancePayout {
 
     @NotBlank(message = "Name cannot be empty!")
     private String name;
-
     @NotBlank(message = "Address cannot be empty!")
     private String address;
-
     private String bankcode;
     private String accountnumber;
     private String mobile;
