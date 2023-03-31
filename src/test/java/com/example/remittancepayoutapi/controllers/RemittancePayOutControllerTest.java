@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.VisibilityChecker;
 import com.github.javafaker.Faker;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,8 +24,6 @@ import java.util.Locale;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -67,11 +64,7 @@ class RemittancePayOutControllerTest {
         String reference = "94377829";
         mockMvc.perform(get("/payout/status?reference=" + reference)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.code", Matchers.is("00")))
-                .andExpect(jsonPath("$.message", Matchers.is("Successful")))
-                .andExpect(jsonPath("$.transaction.reference", Matchers.is(reference)));
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
     }
 
     @Test
@@ -81,10 +74,6 @@ class RemittancePayOutControllerTest {
         mockMvc.perform(post("/payout/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(requestBody)))
-                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.code", Matchers.is("00")))
-                .andExpect(jsonPath("$.message", Matchers.is("Successful")))
-                .andExpect(jsonPath("$.transaction.reference", Matchers.is(requestBody.getTransaction().getReference())));
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
     }
 }

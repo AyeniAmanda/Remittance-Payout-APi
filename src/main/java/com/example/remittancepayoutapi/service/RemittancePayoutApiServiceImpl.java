@@ -2,18 +2,22 @@ package com.example.remittancepayoutapi.service;
 
 
 import com.example.remittancepayoutapi.auth.AuthenticationService;
+import com.example.remittancepayoutapi.dto.PayOutStatusResponse;
 import com.example.remittancepayoutapi.dto.RequestDto;
 import com.example.remittancepayoutapi.dto.Response;
-import com.example.remittancepayoutapi.dto.PayOutStatusResponse;
 import com.example.remittancepayoutapi.exceptions.BadRequestException;
 import com.example.remittancepayoutapi.exceptions.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -28,7 +32,6 @@ import java.net.URISyntaxException;
 public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiService {
 
     private final AuthenticationService authentication;
-    private final RestTemplate restTemplate;
     @Value("${seerbit.baseUrl}")
     private String BASE_URL;
 
@@ -46,7 +49,7 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
                 .retrieve()
                 .bodyToMono(Response.class)
                 .map(response -> {
-                    if (!"Successful".equalsIgnoreCase(response.getMessage())) {
+                    if (!"Successful" .equalsIgnoreCase(response.getMessage())) {
                         throw new BadRequestException(response.getMessage());
                     }
                     return ResponseEntity.ok(response);
@@ -69,7 +72,7 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
                     if (response == null) {
                         throw new ResourceNotFoundException("Resource not found");
                     }
-                    if (!"Successful".equalsIgnoreCase(response.getMessage())) {
+                    if (!"Successful" .equalsIgnoreCase(response.getMessage())) {
                         throw new BadRequestException(response.getMessage());
                     }
                     return ResponseEntity.ok(response);
@@ -77,19 +80,25 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
     }
 
 
-    private ResponseEntity<Response> getResponseResponseEntity(RequestDto body, URI uri, String message) {
-        HttpHeaders httpHeaders = getHeaders();
-        HttpEntity<RequestDto> httpEntity = new HttpEntity<>(body, httpHeaders);
+    private Mono<Response> getResponse(RequestDto body, URI uri, String message) {
+        WebClient webClient = WebClient.create();
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        ResponseEntity<Response> exchange = restTemplate.exchange(uri, HttpMethod.POST, httpEntity, Response.class);
-        if (exchange.getBody() == null) {
-            throw new ResourceNotFoundException("Resource does not exist");
-        }
-
-        if (!message.equalsIgnoreCase(exchange.getBody().getMessage())) {
-            throw new BadRequestException(exchange.getBody().getMessage());
-        }
-        return exchange;
+        return webClient.method(HttpMethod.POST)
+                .uri(uri)
+                .headers(headers -> headers.setBearerAuth(authentication.getValidToken()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(body))
+                .retrieve()
+                .bodyToMono(Response.class)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Resource does not exist")))
+                .flatMap(response -> {
+                    if (!message.equalsIgnoreCase(response.getMessage())) {
+                        return Mono.error(new BadRequestException(response.getMessage()));
+                    }
+                    return Mono.just(response);
+                });
     }
 
     private HttpHeaders getHeaders() {
@@ -112,22 +121,32 @@ public class RemittancePayoutApiServiceImpl implements RemittancePayoutApiServic
     }
 
     @Override
-    public ResponseEntity<Response> cancel(RequestDto body) {
-        URI uri = getURI("/payout/cancel");
-        return getResponseResponseEntity(body, uri, "Cancelled");
+    public Mono<Response> cancel(RequestDto body) {
+        URI uri;
+        try {
+            uri = new URI(BASE_URL.concat("/payout/cancel"));
+        } catch (URISyntaxException exception) {
+            throw new RuntimeException(exception);
+        }
+        return getResponse(body, uri, "Cancelled");
     }
 
     @Override
-    public ResponseEntity<Response> update(RequestDto body) {
-        URI uri = getURI("/payout/update");
-
-        return getResponseResponseEntity(body, uri, "Successful");
+    public Mono<Response> update(RequestDto body) {
+        URI uri;
+        try {
+            uri = new URI(BASE_URL.concat("/payout/update"));
+        } catch (URISyntaxException exception) {
+            throw new RuntimeException(exception);
+        }
+        return getResponse(body, uri, "Successful");
     }
 
+
     @Override
-    public ResponseEntity<Response> create(RequestDto body) {
+    public Mono<Response> create(RequestDto body) {
         URI uri = getURI("/payout/create");
 
-        return getResponseResponseEntity(body, uri, "Successful");
+        return getResponse(body, uri, "Successful");
     }
 }

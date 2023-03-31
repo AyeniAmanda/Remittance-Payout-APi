@@ -42,18 +42,18 @@ public class RemittancePayoutController {
     }
 
     @PostMapping("cancel")
-    public ResponseEntity<Response> cancel(@RequestBody RequestDto body) {
+    public Mono<Response> cancel(@RequestBody RequestDto body) {
 
         return remittancePayoutApiService.cancel(body);
     }
 
     @PostMapping("update")
-    public ResponseEntity<Response> update(@RequestBody RequestDto body) {
+    public Mono<Response> update(@RequestBody RequestDto body) {
         return remittancePayoutApiService.update(body);
     }
 
     @PostMapping("create")
-    public ResponseEntity<Response> create(@RequestBody RequestDto body) {
+    public Mono<Response> create(@RequestBody RequestDto body) {
 
         return remittancePayoutApiService.create(body);
     }
