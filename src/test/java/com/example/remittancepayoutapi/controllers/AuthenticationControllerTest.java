@@ -2,6 +2,7 @@ package com.example.remittancepayoutapi.controllers;
 
 import com.example.remittancepayoutapi.auth.AuthenticationService;
 import com.example.remittancepayoutapi.dto.AuthCredential;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ public class AuthenticationControllerTest {
     private AuthenticationService authenticationService;
 
     @Test
+    @DisplayName("when user enter details then return user token")
     public void testGenerateToken() {
 
         AuthCredential credential = new AuthCredential();
