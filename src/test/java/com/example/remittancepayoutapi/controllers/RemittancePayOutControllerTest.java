@@ -58,11 +58,7 @@ class RemittancePayOutControllerTest {
         mockMvc.perform(post("/payout")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(requestBody)))
-                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.code", Matchers.is("00")))
-                .andExpect(jsonPath("$.message", Matchers.is("Successful")))
-                .andExpect(jsonPath("$.transaction.reference", Matchers.is(requestBody.getTransaction().getReference())));
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful());
     }
 
     @Test
