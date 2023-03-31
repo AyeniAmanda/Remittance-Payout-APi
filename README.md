@@ -1,4 +1,4 @@
-#Remittance Payout API.
+Remittance Payout API.
 -
 This project provides a basic illustration of an integration with SEERBIT payout API.
 
